@@ -1,0 +1,12 @@
+{
+  "id": "9642e332-0a76-4166-a184-b72fb2264f25",
+  "name": "dasdas",
+  "description": "dasd asda",
+  "servers": [
+    {
+      "name": "npm-manager",
+      "version": "0.1.0",
+      "path": "D:\\PROJECTS\\npm-manager"
+    }
+  ]
+}
