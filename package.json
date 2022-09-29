@@ -14,6 +14,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "electron-is-dev": "^2.0.0",
     "node-pty": "^0.10.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -25,7 +26,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && npm run preelectron-build && npm run electron-build",
+    "electron-build": "electron-builder",
+    "lint": "eslint .",
+    "preelectron-build": "shx cp public/electron.js build/electron.js && shx cp -r src/electron/ public/electron/ && shx cp -r src/electron/ build/electron/",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev": "concurrently -k \"npm run start\" \"npm run electron\"",
@@ -34,7 +38,8 @@
     "electron:win": "electron .",
     "rebuild": "electron-rebuild -f -w keyboard-layout",
     "preelectron": "cp -r src/electron public/",
-    "preelectron:win": "dir && xcopy .\\src\\electron .\\public\\"
+    "preelectron:win": "dir && xcopy .\\src\\electron .\\public\\",
+    "postinstall": "electron-builder install-app-deps"
   },
   "eslintConfig": {
     "extends": [
@@ -57,9 +62,10 @@
   "devDependencies": {
     "concurrently": "^7.4.0",
     "electron": "^20.2.0",
-    "electron-is-dev": "^2.0.0",
+    "electron-builder": "^23.3.3",
     "electron-rebuild": "^3.2.9",
     "electron-tools": "^2.4.2",
+    "shx": "^0.3.4",
     "wait-on": "^6.0.1"
   },
   "overrides": {
@@ -71,5 +77,34 @@
     "#ui-screens/*": "./src/browser/Screens/*",
     "#ui-hooks/*": "./src/browser/Hooks/*",
     "#ui-assets/*": "./src/browser/Assets/*"
+  },
+  "build": {
+    "appId": "com.jatazoulja.spectator",
+    "productName": "$pect8r| node manager",
+    "compression": "maximum",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "protocols": {
+      "name": "spectate",
+      "schemes": [
+        "node"
+      ]
+    },
+    "extraMetadata": {
+      "main": "build/electron.js"
+    },
+    "win": {
+      "target": "NSIS",
+      "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": "always",
+      "warningsAsErrors": false,
+      "installerIcon": "public/icon.ico",
+      "uninstallerIcon": "public/icon.ico"
+    }
   }
 }

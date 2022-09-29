@@ -90,6 +90,6 @@ module.exports = (e, a) => {
       loadJsonFromFile(e, a.data, a.data.path);
       break;
     default:
-      saveJsonToFile(e, a.data);
+    //saveJsonToFile(e, a.data);
   }
 };

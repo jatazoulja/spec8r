@@ -19,6 +19,13 @@ export default function DashboardCreateCollectionController({
       action: "new:collection",
       data: { name, description },
     });
+    window.ipcRenderer.on("add:collection", (event, arg) => {
+      handleAddCollection();
+      window.ipcRenderer.send("ListCollection", {
+        action: "list:collection",
+        data: {},
+      });
+    });
   };
   return (
     <Dialog open={open} onClose={handleAddCollection}>

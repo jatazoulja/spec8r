@@ -6,16 +6,13 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
-import AddHomeWorkIcon from "@mui/icons-material/AddHomeWork";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import DevicesRoundedIcon from "@mui/icons-material/DevicesRounded";
 import { useNavigate } from "react-router-dom";
 import DashboardCreateCollectionController from "./DashboardCreateCollectionController";
-import DashboardCreateServerController from "./DashboardCreateServerController";
 
 export default function DashboardNavigationController() {
   const [openCreateCollection, setOpenCreateCollection] = React.useState(false);
-  const [openCreateServer, setOpenCreateServer] = React.useState(false);
   const [listCollections, setListCollections] = React.useState([]);
   let handleClick = useNavigate();
   useEffect(() => {
@@ -30,9 +27,6 @@ export default function DashboardNavigationController() {
   });
   const handleAddCollection = () => {
     setOpenCreateCollection(!openCreateCollection);
-  };
-  const handleAddServer = () => {
-    setOpenCreateServer(!openCreateServer);
   };
 
   const elemCollections = () => {

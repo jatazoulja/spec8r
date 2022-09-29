@@ -33,7 +33,7 @@ export default function AlignItemsList() {
         </Button>
       </Grid>
       <Grid item xs={12}>
-        <Masonry columns={2} spacing={1}>
+        <Masonry columns={{ lg: 2, sm: 1 }} spacing={1}>
           {collection.servers.map((selectedServer, index) => (
             <ServerTerminalController
               server={selectedServer}

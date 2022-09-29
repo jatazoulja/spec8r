@@ -8,8 +8,10 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import { Divider } from "@mui/material";
 export default function ServerTerminalController({ server, instanceId }) {
   const terminalBox = React.useRef();
+  const effectRan = React.useRef(false);
   var term = new Terminal();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [runable, setRunable] = React.useState([]);
@@ -21,19 +23,23 @@ export default function ServerTerminalController({ server, instanceId }) {
     setAnchorEl(null);
   };
   React.useEffect(() => {
-    console.log(!("path" in server));
-    // read package.json
-    window.ipcRenderer.send("SaveToJson", {
-      action: "load:server",
-      data: server,
-    });
-    window.ipcRenderer.on("load:server", (event, data) => {
-      console.log(data);
-      if ("error" in data) throw new Error(data.message);
-      const { scripts } = data.packageJson;
-      setRunable(Object.keys(scripts));
-    });
-    return;
+    if (effectRan.current === false) {
+      console.log(!("path" in server));
+      // read package.json
+      window.ipcRenderer.send("SaveToJson", {
+        action: "load:server",
+        data: server,
+      });
+      window.ipcRenderer.on("load:server", (event, data) => {
+        console.log(data);
+        if ("error" in data) throw new Error(data.message);
+        const { scripts } = data.packageJson;
+        setRunable(Object.keys(scripts));
+      });
+      return () => {
+        effectRan.current = true;
+      };
+    }
   }, []);
 
   const handleRunTerminal = (run) => {
@@ -54,14 +60,12 @@ export default function ServerTerminalController({ server, instanceId }) {
   term.onData((e) => {
     console.log(e);
     window.ipcRenderer.send("TerminalInterface", {
-      action: "terminal.keystrok:",
+      action: "terminal.keystroke",
       data: e,
       instanceId,
     });
   });
   window.ipcRenderer.on("terminal.incomingData" + instanceId, (event, data) => {
-    console.log(data);
-
     term.write(data);
   });
   return (
@@ -93,6 +97,10 @@ export default function ServerTerminalController({ server, instanceId }) {
               {run}
             </MenuItem>
           ))}
+          <Divider />
+          <MenuItem key="instanceId" onClick={() => handleRunTerminal()}>
+            Close
+          </MenuItem>
         </Menu>
       </CardActions>
     </Card>

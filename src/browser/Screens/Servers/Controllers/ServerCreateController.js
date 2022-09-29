@@ -84,8 +84,6 @@ export default function ServerCreateController({ open, close, collection }) {
           ref={descriptionElementRef}
         >
           <Grid container spacing={2}>
-            To subscribe to this website, please enter your email address here.
-            We will send updates occasionally.
             {"name" in packageJSON && (
               <Grid item xs={12}>
                 <TextField

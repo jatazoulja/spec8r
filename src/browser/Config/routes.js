@@ -1,8 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 import DashboardController from "#ui-screens/Dashboard/DashboardController";
 import ServerController from "#ui-screens/Servers/ServersController";
 
-const Routes = createBrowserRouter([
+const Routes = createHashRouter([
   {
     path: "/",
     element: <DashboardController />,
