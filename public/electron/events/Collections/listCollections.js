@@ -45,6 +45,11 @@ async function listCollection(e, data) {
   try {
     const collectionList = await readCollectionFolder(collections);
     const list = await readFileFromFolder(collections, collectionList);
+    e.returnValue = {
+      action: "list:collection",
+      data: list,
+    };
+    return;
     e.sender.send("list:collection", {
       action: "list:collection",
       data: list,

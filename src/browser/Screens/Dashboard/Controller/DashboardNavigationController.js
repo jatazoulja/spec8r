@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -10,39 +10,73 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import DevicesRoundedIcon from "@mui/icons-material/DevicesRounded";
 import { useNavigate } from "react-router-dom";
 import DashboardCreateCollectionController from "./DashboardCreateCollectionController";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import IconButton from "@mui/material/IconButton";
+
+import { useDashboardCollectionContextContext } from "../Context/DashboardCollectionContext";
+import { listAllCollections } from "../Service/DashboardElectronServices";
+import DashboardCollectionMenuController from "./DashboardCollectionMenuController";
 
 export default function DashboardNavigationController() {
   const [openCreateCollection, setOpenCreateCollection] = React.useState(false);
-  const [listCollections, setListCollections] = React.useState([]);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+  const preventMultiRender = useRef(false);
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const {
+    dashboardCollectionContextState,
+    dashboardCollectionContextDispatch,
+  } = useDashboardCollectionContextContext();
   let handleClick = useNavigate();
   useEffect(() => {
-    window.ipcRenderer.send("ListCollection", {
-      action: "list:collection",
-      data: {},
-    });
+    if (!preventMultiRender.current) {
+      listAllCollections(dashboardCollectionContextDispatch);
+      preventMultiRender.current = true;
+    }
   }, []);
 
-  window.ipcRenderer.on("list:collection", (event, arg) => {
-    setListCollections(arg.data);
-  });
   const handleAddCollection = () => {
     setOpenCreateCollection(!openCreateCollection);
   };
 
   const elemCollections = () => {
-    if (!listCollections.length) return null;
+    if (!dashboardCollectionContextState.length) return null;
 
-    return listCollections.map((elem) => (
-      <ListItem
-        key={elem.id}
-        disablePadding
-        onClick={(e) => handleClick(`/collection/${elem.id}`, { state: elem })}
-      >
+    return dashboardCollectionContextState.map((elem) => (
+      <ListItem key={elem.id} disablePadding>
         <ListItemButton>
-          <ListItemIcon>
+          <ListItemIcon
+            onClick={(e) =>
+              handleClick(`/collection/${elem.id}`, { state: elem })
+            }
+          >
             <DevicesRoundedIcon />
           </ListItemIcon>
-          <ListItemText primary={elem.name || "N/A"} />
+          <ListItemText
+            onClick={(e) =>
+              handleClick(`/collection/${elem.id}`, { state: elem })
+            }
+            primary={elem.name || "N/A"}
+          />
+          <IconButton
+            onClick={handleMenuClick}
+            aria-label="fingerprint"
+            color="default"
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <DashboardCollectionMenuController
+            open={open}
+            collection={elem}
+            handleClose={handleClose}
+            anchorEl={anchorEl}
+          />
         </ListItemButton>
       </ListItem>
     ));
