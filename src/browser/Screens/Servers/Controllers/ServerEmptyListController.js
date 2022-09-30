@@ -8,6 +8,7 @@ import Grid from "@mui/material/Grid";
 
 import Empty from "#ui-assets/empty.png";
 import ServerCreateController from "./ServerCreateController";
+
 export default function ServerEmptyListController({ collection }) {
   const [openCreateServer, setOpenCreateServer] = React.useState(false);
 

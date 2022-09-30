@@ -10,7 +10,7 @@ function createWindow() {
   const waObj = screen.getPrimaryDisplay().workAreaSize;
   // Create the browser window.
   const win = new BrowserWindow({
-    width: waObj.width,
+    width: waObj.width * 0.5,
     height: waObj.height,
     webPreferences: {
       nodeIntegration: true,
@@ -20,7 +20,7 @@ function createWindow() {
       preload: path.join(__dirname + "/electron", "preload.js"),
     },
   });
-
+  win.setPosition(0, 0);
   // and load the index.html of the app.
   // win.loadFile("index.html");
   win.loadURL(

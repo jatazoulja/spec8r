@@ -5,12 +5,16 @@ const { v4: uuidv4 } = require("uuid");
 const { Temporal } = require("@js-temporal/polyfill");
 
 async function readCollectionFolder(dir) {
-  return new Promise((res, rej) => {
-    fs.readdir(dir, function (err, list) {
-      if (err) return rej(err);
-      res(list);
-    });
-  });
+  var files = fs.readdirSync(dir);
+  const directory = [];
+  for (var i in files) {
+    var name = dir + "/" + files[i];
+    if (fs.statSync(name).isDirectory()) {
+      directory.push(files[i]);
+    }
+  }
+
+  return directory;
 }
 async function readCollectionFile(file) {
   return new Promise((resolve, reject) => {
@@ -23,16 +27,22 @@ async function readCollectionFile(file) {
 async function readFileFromFolder(dir, folder) {
   let collectionArray = [];
   return new Promise(async (res, rej) => {
-    for (const file of folder) {
-      const contents = await readCollectionFile(path.join(dir, file));
-      collectionArray.push({
-        id: file.replace(".json", ""),
-        ...JSON.parse(contents),
-      });
-    }
+    try {
+      for (const file of folder) {
+        const contents = await readCollectionFile(
+          path.join(dir, file, "index.json")
+        );
+        collectionArray.push({
+          id: file.replace(".json", ""),
+          ...JSON.parse(contents),
+        });
+      }
 
-    console.log(collectionArray);
-    res(collectionArray);
+      console.log(collectionArray);
+      res(collectionArray);
+    } catch (error) {
+      rej(error);
+    }
   });
 }
 
@@ -40,14 +50,13 @@ async function listCollection(e, data) {
   // const currentTime = Temporal.Now.instant().epochMilliseconds;
   const dir = app.getAppPath();
   const collections = path.join(dir, "collections");
-  console.log(collections);
+
   if (!fs.existsSync(collections)) {
     fs.mkdirSync(collections);
   }
 
   try {
     const collectionList = await readCollectionFolder(collections);
-    console.log(collectionList);
 
     const list = await readFileFromFolder(collections, collectionList);
     e.returnValue = {
@@ -68,12 +77,12 @@ async function listCollection(e, data) {
 async function editCollection(e, data) {
   const currentTime = Temporal.Now.instant().epochMilliseconds;
   const dir = app.getAppPath();
-  const collection = path.join(dir, "collections", data.id + ".json");
+  const collection = path.join(dir, "collections", data.id, "index.json");
 
   if (!fs.existsSync(collection)) {
     e.returnValue = {
       error: true,
-      message: "no action attached",
+      message: "Unable to edit collection",
     };
     return;
   }
@@ -83,7 +92,7 @@ async function editCollection(e, data) {
       JSON.stringify({ ...data, modifiedDate: currentTime }),
       "utf-8"
     );
-    console.log(collectionData);
+    console.debug(collectionData);
     e.returnValue = {
       action: "edit:collection",
       data: data,
@@ -109,13 +118,12 @@ async function addCollection(e, content) {
   };
 
   try {
-    console.log(path.join(dir, "collections"));
     if (!fs.existsSync(path.join(dir, "collections"))) {
       fs.mkdirSync(path.join(dir, "collections"));
     }
-
+    fs.mkdirSync(path.join(dir, "collections", newCollection.id));
     fs.writeFileSync(
-      path.join(dir, "collections", newCollection.id + ".json"),
+      path.join(dir, "collections", newCollection.id, "index.json"),
       JSON.stringify(newCollection)
     );
     e.returnValue = {

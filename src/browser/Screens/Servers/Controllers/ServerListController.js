@@ -1,62 +1,41 @@
 import * as React from "react";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
+import Masonry from "@mui/lab/Masonry";
 
-export default function ServerListController({
-  collection,
-  selectedServer,
-  setSelectedServer,
-}) {
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+import ServerTerminalController from "./ServerTerminalController";
+import ServerEmptyListController from "./ServerEmptyListController";
+import { useServersContextContext } from "../Context/ServersContext";
+import { listAllServer } from "../Service/ServerService";
 
-  const handleListItemClick = (event, index) => {
-    setSelectedIndex(index);
-    setSelectedServer(collection[index]);
-  };
+export default function ServerListController({ collectionId, collection }) {
+  const { serversContextState, serversContextDispatch } =
+    useServersContextContext();
+  const effectRan = React.useRef(false);
+  console.log(collectionId);
+  React.useEffect(() => {
+    // if (effectRan.current === false) {
+    listAllServer(collectionId, serversContextDispatch);
+    //   return () => {
+    //     effectRan.current = true;
+    //   };
+    // }
+  }, [collectionId]);
 
-  const listServer = collection.map((el, i) => [
-    <ListItem
-      key={i + el}
-      alignItems="flex-start"
-      selected={selectedIndex === i}
-      onClick={(event) => handleListItemClick(event, i)}
-    >
-      <ListItemAvatar>
-        <Avatar alt={el.name} src="/static/images/avatar/3.jpg" />
-      </ListItemAvatar>
-      <ListItemText
-        primary={el.name}
-        secondary={
-          <React.Fragment>
-            <Typography
-              sx={{ display: "inline" }}
-              component="span"
-              variant="body2"
-              color="text.primary"
-            >
-              {el.version}
-            </Typography>
-            {` PATH: ${el.path}`}
-          </React.Fragment>
-        }
+  if (serversContextState.data.length === 0) {
+    return <ServerEmptyListController collection={collection} />;
+  }
+  let serverList = serversContextState.data.map((selectedServer, index) => {
+    return (
+      <ServerTerminalController
+        server={selectedServer}
+        collectionId={collectionId}
+        key={collectionId + "-" + index}
+        instanceId={selectedServer.id}
       />
-    </ListItem>,
-    <Divider
-      key={"divider" + i + el}
-      variant="inset"
-      component="li"
-      hidden={i > collection.length}
-    />,
-  ]);
-
+    );
+  });
   return (
-    <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
-      {listServer}
-    </List>
+    <Masonry columns={{ lg: 2, sm: 1 }} spacing={1}>
+      {serverList}
+    </Masonry>
   );
 }

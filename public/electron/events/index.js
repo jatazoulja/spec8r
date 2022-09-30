@@ -1,10 +1,12 @@
 const { ipcMain } = require("electron");
 const SaveToJson = require("./SaveJsonTofile");
 const Collection = require("./Collections/Collections");
+const Servers = require("./Collections/Servers");
 const DialogSelectFolder = require("./DialogSelectFolder");
 const TerminalInterface = require("./Terminal/interfaceTerminal");
 const eventStore = {
   SaveToJson,
+  Servers,
   Collection,
   DialogSelectFolder,
   TerminalInterface,

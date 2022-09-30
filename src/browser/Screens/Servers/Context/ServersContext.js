@@ -1,5 +1,5 @@
 import * as React from "react";
-import { orderBy } from "lodash";
+import _, { orderBy } from "lodash";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
@@ -7,43 +7,62 @@ const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
-const DashboardCollectionContextContext = React.createContext();
+const ServersContextContext = React.createContext();
 const initState = {
   error: false,
   message: "",
   data: [],
 };
 
-function dashboardCollectionContextReducer(state = initState, actions) {
+function serversContextReducer(state = initState, actions) {
   if (actions.error) {
     return { ...state, ...actions };
   }
   const { action, data, message = "" } = actions;
   switch (action) {
-    case "list:collection":
+    case "list:server":
       let sorted = orderBy(data, ["modifiedDate"], ["desc"]);
       sorted.forEach((e) => console.log(e.modifiedDate));
       return { ...state, message, error: false, data: [...sorted] };
-    case "edit:collection":
+    case "edit:server":
       let edit = state.data.map((i) => (i.id === data.id ? data : i));
 
       return { ...state, message, error: false, data: [...edit] };
-    case "add:collection":
-      return { ...state, message, error: false, data: [...state.data, data] };
+    case "load:json":
+      let json = state.data.map((i) => {
+        if (i.id !== actions.id) return i;
+        console.log(Object.keys(data.scripts));
+        return {
+          ...i,
+          package: data,
+          scripts: Object.keys(data.scripts),
+        };
+      });
+      console.log(json);
+      return { ...state, message, error: false, data: [...json] };
+    case "add:server":
+      return {
+        ...state,
+        message,
+        error: false,
+        data: [...state.data, data],
+      };
     default:
       return { ...state, message, error: false, data: [...data] };
   }
 }
 
-function DashboardCollectionContextProvider({ children }) {
-  const [dashboardCollectionContextState, dashboardCollectionContextDispatch] =
-    React.useReducer(dashboardCollectionContextReducer, initState);
+function ServersContextProvider({ children }) {
+  const [serversContextState, serversContextDispatch] = React.useReducer(
+    serversContextReducer,
+    initState
+  );
   const [open, setOpen] = React.useState(false);
 
   const [isLoading, setIsLoading] = React.useState(false);
   React.useEffect(() => {
     setOpen(true);
-  }, [dashboardCollectionContextState]);
+  }, [serversContextState]);
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -53,13 +72,13 @@ function DashboardCollectionContextProvider({ children }) {
     setOpen(false);
   };
   const value = {
-    dashboardCollectionContextState,
-    dashboardCollectionContextDispatch,
+    serversContextState,
+    serversContextDispatch,
     isLoading,
     setIsLoading,
   };
   return (
-    <DashboardCollectionContextContext.Provider value={value}>
+    <ServersContextContext.Provider value={value}>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert
           variant="outlined"
@@ -68,26 +87,23 @@ function DashboardCollectionContextProvider({ children }) {
             horizontal: "center",
           }}
           onClose={handleClose}
-          severity={dashboardCollectionContextState.error ? "error" : "success"}
+          severity={serversContextState.error ? "error" : "success"}
           sx={{ width: "100%" }}
         >
-          {dashboardCollectionContextState.message}
+          {serversContextState.message}
         </Alert>
       </Snackbar>
       {children}
-    </DashboardCollectionContextContext.Provider>
+    </ServersContextContext.Provider>
   );
 }
-function useDashboardCollectionContextContext() {
-  const context = React.useContext(DashboardCollectionContextContext);
+function useServersContextContext() {
+  const context = React.useContext(ServersContextContext);
   if (context === undefined) {
     throw new Error(
-      "useDashboardCollectionContextContext must be used within a DashboardCollectionContextProvider"
+      "useServersContextContext must be used within a ServersContextProvider"
     );
   }
   return context;
 }
-export {
-  DashboardCollectionContextProvider,
-  useDashboardCollectionContextContext,
-};
+export { ServersContextProvider, useServersContextContext };

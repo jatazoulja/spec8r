@@ -13,28 +13,34 @@ import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import Stack from "@mui/material/Stack";
 import { Box } from "@mui/system";
 
+import { useServersContextContext } from "../Context/ServersContext";
+import { addServer } from "../Service/ServerService";
+
 export default function ServerCreateController({ open, close, collection }) {
   const [packageJSON, setPackageJSON] = React.useState({});
   const [folderPath, setFolderPath] = React.useState({});
-  const [tempCollection, setTempCollection] = React.useState(collection);
+
+  const {
+    serversContextState,
+    serversContextDispatch,
+    isLoading,
+    setIsLoading,
+  } = useServersContextContext();
+
   const handleAddServer = (newPackage) => {
-    console.log(tempCollection);
-    const temp = {
-      ...tempCollection,
-      servers: [...tempCollection.servers, newPackage],
-    };
-    setTempCollection(temp);
+    console.log(newPackage);
+    addServer(collection.id, newPackage, serversContextDispatch);
     close();
 
-    window.ipcRenderer.send("SaveToJson", {
-      action: "edit:collection",
-      filename: `${temp.id}.json`,
-      data: temp,
-    });
-    window.ipcRenderer.send("ListCollection", {
-      action: "list:collection",
-      data: {},
-    });
+    // window.ipcRenderer.send("Servers", {
+    //   action: "edit:collection",
+    //   filename: `${temp.id}.json`,
+    //   data: temp,
+    // });
+    // window.ipcRenderer.send("ListCollection", {
+    //   action: "list:collection",
+    //   data: {},
+    // });
   };
   const hanleOpenFolder = () => {
     window.ipcRenderer.send("DialogSelectFolder", { action: "add:server" });
@@ -43,9 +49,9 @@ export default function ServerCreateController({ open, close, collection }) {
     setFolderPath(arg.filePath);
     setPackageJSON(JSON.parse(arg.data));
   });
-  window.ipcRenderer.on("edit:collection", (e, arg) => {
-    console.log(arg);
-  });
+  // window.ipcRenderer.on("edit:collection", (e, arg) => {
+  //   console.log(arg);
+  // });
   const displayScripts = (scripts) =>
     Object.keys(scripts).map((el, i) => (
       <Chip key={i + el} icon={<TerminalIcon />} label={el} />
@@ -57,11 +63,7 @@ export default function ServerCreateController({ open, close, collection }) {
       collection,
       servers: !Object.keys(collection).includes("servers"),
     });
-    if (!Object.keys(collection).includes("servers"))
-      setTempCollection({
-        ...collection,
-        servers: [],
-      });
+
     if (open) {
       const { current: descriptionElement } = descriptionElementRef;
       if (descriptionElement !== null) {
@@ -159,10 +161,11 @@ export default function ServerCreateController({ open, close, collection }) {
         <Button onClick={close}>Cancel</Button>
         <Button
           onClick={() => {
-            const { name, version } = packageJSON;
+            const { name, scripts, version } = packageJSON;
             const temp = {
               name,
               version,
+              scripts,
               path: folderPath,
             };
             console.log(temp);

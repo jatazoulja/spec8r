@@ -57,9 +57,9 @@ export default function DashboardNavigationController() {
   };
 
   const elemCollections = (active) => {
-    if (!dashboardCollectionContextState.length) return null;
+    if (!dashboardCollectionContextState.data.length) return null;
 
-    return dashboardCollectionContextState.map((elem) => {
+    return dashboardCollectionContextState.data.map((elem) => {
       const isFavorite = elem.favorite || false;
       const archived = elem.archived || false;
       if (active === archived) return false;

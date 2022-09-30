@@ -13,8 +13,10 @@ export async function setFavorite(data, dispatch) {
     action: "edit:collection",
     data: data,
   });
-  console.log(response);
-  dispatch(response);
+  dispatch({
+    ...response,
+    message: response.message || `${data.name} added to favorite`,
+  });
 }
 export async function setArchived(data, dispatch) {
   const response = await ipcRenderer.sendSync("Collection", {
@@ -22,7 +24,10 @@ export async function setArchived(data, dispatch) {
     data: data,
   });
   console.log(response);
-  dispatch(response);
+  dispatch({
+    ...response,
+    message: response.message || `${data.name} added to favorite`,
+  });
 }
 export async function addCollection(data, dispatch) {
   const response = await ipcRenderer.sendSync("Collection", {
@@ -30,5 +35,8 @@ export async function addCollection(data, dispatch) {
     data: data,
   });
   console.log(response);
-  dispatch(response);
+  dispatch({
+    ...response,
+    message: response.message || `${data.name} added collection`,
+  });
 }

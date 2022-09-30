@@ -9,6 +9,11 @@ import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { Divider } from "@mui/material";
+import _ from "lodash";
+
+import { useServersContextContext } from "../Context/ServersContext";
+import { loadServerJson } from "../Service/ServerService";
+
 export default function ServerTerminalController({ server, instanceId }) {
   const terminalBox = React.useRef();
   const effectRan = React.useRef(false);
@@ -16,6 +21,10 @@ export default function ServerTerminalController({ server, instanceId }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [runable, setRunable] = React.useState([]);
   const open = Boolean(anchorEl);
+
+  const { serversContextState, serversContextDispatch } =
+    useServersContextContext();
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -24,23 +33,18 @@ export default function ServerTerminalController({ server, instanceId }) {
   };
   React.useEffect(() => {
     if (effectRan.current === false) {
-      console.log(!("path" in server));
-      // read package.json
-      window.ipcRenderer.send("SaveToJson", {
-        action: "load:server",
-        data: server,
-      });
-      window.ipcRenderer.on("load:server", (event, data) => {
-        console.log(data);
-        if ("error" in data) throw new Error(data.message);
-        const { scripts } = data.packageJson;
-        setRunable(Object.keys(scripts));
-      });
+      loadServerJson(server, serversContextDispatch);
       return () => {
         effectRan.current = true;
       };
     }
   }, []);
+  console.log(instanceId);
+  React.useEffect(() => {
+    let selectedServer = _.filter(serversContextState.data, { id: instanceId });
+    console.log(selectedServer[0].script);
+    setRunable(selectedServer[0].scripts);
+  }, [serversContextState]);
 
   const handleRunTerminal = (run) => {
     if (!("path" in server)) return;
@@ -55,19 +59,23 @@ export default function ServerTerminalController({ server, instanceId }) {
       instanceId,
     });
     setAnchorEl(null);
+    term.onData((e) => {
+      console.log(e);
+      window.ipcRenderer.send("TerminalInterface", {
+        action: "terminal.keystroke",
+        data: e,
+        instanceId,
+      });
+    });
+    window.ipcRenderer.on(
+      "terminal.incomingData" + instanceId,
+      (event, data) => {
+        term.write(data);
+      }
+    );
   };
 
-  term.onData((e) => {
-    console.log(e);
-    window.ipcRenderer.send("TerminalInterface", {
-      action: "terminal.keystroke",
-      data: e,
-      instanceId,
-    });
-  });
-  window.ipcRenderer.on("terminal.incomingData" + instanceId, (event, data) => {
-    term.write(data);
-  });
+  // if (!("scripts" in serversContextState)) return null;
   return (
     <Card lg={{ minWidth: 500 }}>
       <CardContent>

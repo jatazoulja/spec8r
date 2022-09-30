@@ -1,0 +1,1 @@
+{"name":"lotto","version":"0.0.0","scripts":{"start":"nodemon -L ./bin/www  > my_app_log.log 2> my_app_err.log"},"path":"D:\\PROJECTS\\lotto","id":"ae019b3b-b61d-47c0-9058-293f738eaab9","modifiedDate":1664535039362,"createdDate":1664535039362}
