@@ -6,21 +6,26 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { addCollection } from "../Service/DashboardElectronServices";
-import { useDashboardCollectionContextContext } from "../Context/DashboardCollectionContext";
-export default function DashboardCreateCollectionController({
+
+export default function DashboardEditCollectionController({
   handleAddCollection,
   open,
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const { dashboardCollectionContextDispatch } =
-    useDashboardCollectionContextContext();
-
   const saveCollection = () => {
     console.log({ name, description });
-    addCollection({ name, description }, dashboardCollectionContextDispatch);
-    handleAddCollection(false);
+    window.ipcRenderer.send("SaveToJson", {
+      action: "new:collection",
+      data: { name, description },
+    });
+    window.ipcRenderer.on("add:collection", (event, arg) => {
+      handleAddCollection();
+      window.ipcRenderer.send("Collection", {
+        action: "list:collection",
+        data: {},
+      });
+    });
   };
   return (
     <Dialog open={open} onClose={handleAddCollection}>

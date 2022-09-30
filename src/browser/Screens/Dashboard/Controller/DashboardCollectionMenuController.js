@@ -10,6 +10,9 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 
+import { setFavorite, setArchived } from "../Service/DashboardElectronServices";
+import { useDashboardCollectionContextContext } from "../Context/DashboardCollectionContext";
+
 const StyledMenu = styled((props) => (
   <Menu
     elevation={0}
@@ -17,6 +20,7 @@ const StyledMenu = styled((props) => (
       vertical: "bottom",
       horizontal: "right",
     }}
+    anchorEl={props.anchorEl}
     transformOrigin={{
       vertical: "top",
       horizontal: "right",
@@ -59,7 +63,11 @@ export default function DashboardCollectionMenuController({
   handleClose,
   collection,
 }) {
-  const isFavorite = collection.favorite && false;
+  const { dashboardCollectionContextDispatch } =
+    useDashboardCollectionContextContext();
+  const isFavorite = collection.favorite || false;
+  const archived = collection.archived || false;
+
   const handleEdit = () => {
     handleClose();
     console.log(collection);
@@ -69,12 +77,24 @@ export default function DashboardCollectionMenuController({
     console.log(collection);
   };
   const handleArchived = () => {
+    setArchived(
+      {
+        ...collection,
+        archived: !archived,
+      },
+      dashboardCollectionContextDispatch
+    );
     handleClose();
-    console.log(collection);
   };
   const handleFavorite = () => {
+    setFavorite(
+      {
+        ...collection,
+        favorite: !isFavorite,
+      },
+      dashboardCollectionContextDispatch
+    );
     handleClose();
-    console.log(collection);
   };
   return (
     <>
